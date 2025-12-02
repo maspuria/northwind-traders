@@ -4,7 +4,7 @@ import java.sql.*;
 
 public class App {
 
-    public static void main(String[] args) throws SQLException {
+    public static void main(String[] args) {
         String url = "jdbc:mysql://localhost:3306/northwind";
         String username = args[0];
         String password = args[1];
