@@ -9,56 +9,78 @@ public class App {
         String username = args[0];
         String password = args[1];
 
-        // 1. open a connection to the database
-        Connection connection = DriverManager.getConnection(url,username,password);
+        displayProducts(url, username, password);
+        displayCustomers(url, username, password);
+    }
 
+    private static void displayProducts(String url, String username, String password) {
         //  define your query
         String query = """
-                SELECT ProductName, ProductID, UnitPrice, UnitsInStock
-                FROM products
-                WHERE ProductName LIKE ? AND UnitPrice < ?;
+                        SELECT ProductName, ProductID, UnitPrice, UnitsInStock
+                        FROM products;
+                        """;
+
+        try (// 1. open a connection to the database
+             Connection connection = DriverManager.getConnection(url, username, password);
+             // create statement
+             // the statement is tied to the open connection
+             PreparedStatement statement = connection.prepareStatement(query)) {
+
+            try (ResultSet results = statement.executeQuery()) {
+                // process the results
+                while (results.next()) {
+                    String products = results.getString("ProductName");
+                    int productID = results.getInt("ProductID");
+                    double price = results.getDouble("UnitPrice");
+                    int stock = results.getInt("UnitsInStock");
+
+                    System.out.println("Product ID: " + productID);
+                    System.out.println("Product Name: " + products);
+                    System.out.println("Price: $" + price);
+                    System.out.println("Stock: " + stock);
+                    System.out.println("-------------------------------------------");
+                }
+            }
+
+        } catch (SQLException e) {
+            System.out.println("There was an error retrieving data. Try again please.");
+            e.printStackTrace();
+        }
+    }
+
+    private static void displayCustomers(String url, String username, String password) {
+        String query = """
+                SELECT ContactName, CompanyName, City, Country, Phone
+                FROM customers
+                ORDER BY Country;
                 """;
 
-//        String query = """
-//                SELECT ProductName, ProductID, UnitPrice, UnitsInStock
-//                FROM products
-//                WHERE UnitPrice BETWEEN ? AND ?;
-//                """;
+        try (Connection connection = DriverManager.getConnection(url, username, password);
+             PreparedStatement statement = connection.prepareStatement(query)) {
 
-        // create statement
-        // the statement is tied to the open connection
-        PreparedStatement statement = connection.prepareStatement(query);
+            try (ResultSet results = statement.executeQuery()) {
+                // process the results
+                while (results.next()) {
+                    String contactName = results.getString("ContactName");
+                    String companyName = results.getString("CompanyName");
+                    String city = results.getString("City");
+                    String country = results.getString("Country");
+                    String phoneNumber = results.getString("Phone");
 
-        // String searchTerm = "%CHO%"; statement.setString(1,searchTerm);
-        // set parameters
+                    System.out.println("Contact Name: " + contactName);
+                    System.out.println("Company Name: " + companyName);
+                    System.out.println("City: " + city);
+                    System.out.println("Country: " + country);
+                    System.out.println("Phone Number: " + phoneNumber);
+                    System.out.println("************************************************");
+                }
+            }
 
-        statement.setString(1,"%CHO%");
-        statement.setDouble(2, 15.00);
-
-//      statement.setDouble(1, 5.00);
-//      statement.setDouble(2, 15.00);
-
-        // 2. Execute your query
-        ResultSet results = statement.executeQuery();
-
-        // process the results
-        while (results.next()) {
-            String products = results.getString("ProductName");
-            int productID = results.getInt("ProductID");
-            double price = results.getDouble("UnitPrice");
-            int stock = results.getInt("UnitsInStock");
-
-            System.out.println("Product ID: " + productID);
-            System.out.println("Product Name: " + products);
-            System.out.println("Price: $" + price);
-            System.out.println("Stock: " + stock);
-            System.out.println("************************************************");
+        } catch (SQLException e) {
+            System.out.println("There was an error retrieving data. Try again please.");
+            e.printStackTrace();
         }
 
-        // 3. Close the connection
-        results.close();
-        statement.close();
-        connection.close();
-
     }
+
 }
